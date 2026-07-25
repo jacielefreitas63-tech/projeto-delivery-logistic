@@ -1,83 +1,52 @@
-# projeto-delivery-logistic
-# 🚚 Otimização de Logística e Precificação Dinâmica no Mercado de Delivery
+# 🧪 Projeto Delivery: Engenharia de Dados & Análise Exploratória (EDA)
 
-![Status do Projeto](https://img.shields.io/badge/Status-Em%20Desenvolvimento-orange?style=for-the-badge)
-![Nível](https://img.shields.io/badge/N%C3%ADvel-S%C3%AAnior-blue?style=for-the-badge)
+![Status](https://img.shields.io/badge/STATUS-DESENVOLVIMENTO-brightgreen)
+![Nível](https://img.shields.io/badge/NÍVEL-JUNIOR-blue)
 
-> *Abordagem Estratégica:* Este projeto redesenha a eficiência da última milha (last-mile) integrando dados transacionais de e-commerce, malhas viárias urbanas e séries temporais meteorológicas para mitigar atrasos e prejuízos operacionais.
+Este projeto tem como objetivo principal a construção de um pipeline de dados robusto, integrando bases transacionais de delivery (Olist), dados geográficos (OpenStreetMap) e dados meteorológicos (INMET), visando a análise de gargalos logísticos e o impacto de fatores externos no tempo de entrega.
 
----
+## 🚀 Tecnologias Utilizadas
 
-## 🎯 1. O Desafio do Negócio (Business Problem)
+*   **Linguagem:** Python 3.12
+*   **Processamento Distribuído:** Apache PySpark
+*   **Manipulação de Dados:** Pandas, NumPy
+*   **Engenharia Geoespacial:** OSMnx, NetworkX, GeoPandas
+*   **Infraestrutura:** Google Colab, Google Drive (Data Lake)
 
-O crescimento acelerado do mercado de delivery e e-commerce trouxe um desafio crítico: a ineficiência na *última milha* (last-mile delivery), a etapa final e mais onerosa da entrega. Atualmente, as plataformas enfrentam dificuldades crônicas para prever o tempo exato de entrega e para calcular taxas de frete que sejam atraentes para o cliente, mas que ainda cubram os custos operacionais (combustível, manutenção e remuneração de entregadores). 
+## 🛠️ Etapas do Pipeline
 
-A flutuação imprevisível da demanda — influenciada por horários de pico, condições climáticas severas e trânsito — gera gargalos logísticos severos. O resultado direto desse cenário é medido em:
-* 📉 *Aumento do Churn:* Cancelamentos de pedidos e perda de clientes por quebra de expectativa.
-* 💸 *Erosão da Margem:* Prejuízo financeiro direto para as plataformas e lojistas parceiros devido ao frete estático deficitário.
+O fluxo de processamento está organizado em cinco etapas principais:
 
-### 💡 A Solução via Dados
-A ciência de dados mitiga esse gargalo através de modelagem preditiva e otimização algorítmica. Utilizando dados históricos de entregas cruzados com variáveis externas, este projeto estrutura a base analítica para a criação de modelos de Machine Learning capazes de prever o tempo de entrega com alta precisão e implementar motores de *precificação dinâmica*, ajustando o valor do frete e o raio de atendimento em tempo real para garantir o nível de serviço (SLA) e a sustentabilidade financeira do ecossistema.
+### 1. Configuração e Ingestão Inicial
+*   Configuração do ambiente PySpark com otimização de memória.
+*   Leitura e conversão dos datasets originais (CSV) para o formato **Parquet**, visando maior eficiência de I/O e compressão.
+*   Tratamento inicial de tipos e limpeza de CEPs para garantir integridade nos *joins*.
 
----
+### 2. Tratamento de Pedidos (Olist)
+*   Consolidação das tabelas transacionais (`orders`, `customers`, `items`, `reviews`, `geolocation`).
+*   Aplicação de técnicas de *broadcast join* para otimização de performance no cluster Spark.
+*   Criação de métricas de negócio, como `dias_atraso` e identificação de `is_gargalo` (atrasos).
 
-## 💾 2. Ecossistema de Dados (Data Sources)
+### 3. Integração Meteorológica (INMET)
+*   Ingestão de dados históricos climáticos.
+*   Limpeza e normalização de variáveis como `media_chuva_mm` e `max_chuva_mm`.
+*   Cruzamento de dados meteorológicos com a data real de entrega para análise de impacto climático.
 
-O projeto simula um ambiente de Big Data real utilizando três fontes de dados públicas, complexas e anonimizadas:
+### 4. Malha Rodoviária (OpenStreetMap)
+*   Processamento de grafos de estradas.
+*   Cálculo de métricas de trafegabilidade (`speed_kph`, `travel_time`).
+*   Particionamento estratégico dos dados por `estado` para acelerar consultas futuras.
 
-*   *📦 Base 1: Olist Store E-commerce Dataset (Kaggle)*
-    *   Conteúdo: Dados estruturados relacionais de mais de 100 mil pedidos reais no Brasil (2016-2018). Inclui geolocalização (coordenadas zip_code), status de entrega, preço, frete e avaliações dos clientes.
-    *   Coleta: Consumo automatizado via API do Kaggle (kaggle api).
-*   *🗺️ Base 2: Malha Rodoviária Urbana (OpenStreetMap)*
-    *   Conteúdo: Dados geoespaciais estruturados e semiestruturados contendo rotas, restrições de tráfego, distâncias reais e pontos de interesse (POIs).
-    *   Coleta: Extração automatizada em Python via biblioteca OSMnx e API Overpass.
-*   *🌧️ Base 3: Histórico Meteorológico (INMET)*
-    *   Conteúdo: Séries temporais horárias com registros de precipitação (chuva em mm) e temperatura nas capitais estudadas.
-    *   Coleta: Integração via scripts de raspagem com requests e BeautifulSoup no portal oficial de dados abertos.
+### 5. Data Mart & Análise (EDA)
+*   Criação do *Data Mart* consolidado (`df_finallookker_dashboard.parquet`).
+*   Análise de correlação entre pluviosidade, frete, localização e o *target* (atraso na entrega).
+*   Geração de *heatmaps* para visualização de padrões estatísticos.
 
----
+## 📊 Principais Resultados da Auditoria
 
-## 🛠️ 3. Arquitetura de Dados Multi-Ferramenta (EDA)
+*   **Volumetria:** O processamento final consolidou 99.441 registros de pedidos.
+*   **Qualidade:** Implementação de filtros rigorosos para remover nulos e inconsistências, resultando em uma base refinada pronta para dashboards no Looker ou ferramentas de BI.
+*   **Performance:** Uso de `repartition` e `partitionBy` para otimizar a persistência dos dados.
 
-Uma arquitetura sênior não força todas as etapas em uma única tecnologia. Cada ferramenta foi alocada exclusivamente no seu cenário de *eficiência máxima*:
-
-| Ferramenta | Cenário de Aplicação Exclusiva | Objetivo Técnico |
-| :--- | :--- | :--- |
-| ![Google Sheets](https://img.shields.io/badge/Google%20Sheets-34A853?style=flat&logo=googlesheets&logoColor=white) | Inspeção Visual Rápida | Amostragem inicial (1k linhas) para detectar anomalias óbvias e nulos antes do código. |
-| ![SQL](https://img.shields.io/badge/SQL-CC292B?style=flat&logo=postgresql&logoColor=white) | Estruturação e Filtragem | Execução de queries complexas, validação de chaves (PK/FK) e remoção de incongruências temporais. |
-| ![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white) | Tratamento Fino e Estatística | Conversão de tipos (datetime), remoção de outliers via IQR (Seaborn) e mapas de calor (GeoPandas). |
-| ![PySpark](https://img.shields.io/badge/PySpark-E25A1C?style=flat&logo=apachespark&logoColor=white) | Processamento de Big Data | Processamento em memória das séries temporais massivas do INMET e grafos do OSM, evitando erros de OOM. |
-
----
-
-## 📊 4. Estrutura do Relatório de Insights
-
-Tradução direta de dados estatísticos em tomadas de decisão executiva (BI):
-
-1.  *Data Findings (Achados):* Quantificação de minutos adicionais de atraso por mm de chuva, isolamento de gargalos viários urbanos específicos e cálculo do descolamento real de SLA.
-2.  *Business Impact (Impacto):* Avaliação do impacto do atraso no Customer Lifetime Value (LTV) e diagnóstico de perda de margem por frete estático sob condições severas.
-3.  *Strategic Recommendations (Soluções):* Desenho de um motor de precificação dinâmica para horários críticos e algoritmo de contração automática do raio de atendimento de parceiros em tempestades.
-
----
-
-## 📈 5. Arquitetura do Dashboard (Looker Studio)
-
-Painel executivo interativo projetado para decisões operacionais em tempo real:
-
-[Visão Geral Logística] ──> [Filtros: Período, Região Metropolitana, Condição Climática]
-│
-├─► [Métricas Kpi] ───► ETA Médio, SLA Compliance (%), Taxa de Churn por Atraso
-├─► [Mapas Geográficos] ► Epicentros e Densidade de Gargalos (Lat/Long)
-└─► [Gráficos Correlação] Dispersão (Chuva vs Tempo), Barras Empilhadas (Satisfação vs Atraso)
-
----
-
-## 📂 6. Organização do Repositório
-
-```text
-📦 projeto-delivery-logistica
- ┣ 📂 data                   # Documentação e instruções de acesso às bases brutas
- ┣ 📂 notebooks              # Engenharia de dados e EDA (Google Colab / Jupyter)
- ┣ 📂 sql                    # Repositório de queries e views de integração
- ┣ 📂 reports                # Relatório executivo de insights em PDF
- ┗ 📜 README.md              # Documentação principal do projeto
+## 💡 Como Executar
+*(Adicione aqui os passos para rodar o seu código, ex: clonar o repositório, instalar requirements.txt, etc.)*
