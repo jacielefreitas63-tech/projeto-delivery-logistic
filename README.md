@@ -9,7 +9,7 @@ Este projeto tem como objetivo principal a construção de um pipeline de dados 
 ---
 
 ## 🚀 Tecnologias Utilizadas
-* **Linguagem:** Python 3.12
+* **Linguagem:** Python 3.12, SQL
 * **Processamento Distribuído:** Apache PySpark
 * **Manipulação de Dados:** Pandas, NumPy
 * **Engenharia Geoespacial:** OSMnx, NetworkX, GeoPandas
